@@ -31,7 +31,7 @@ jobs:
 
       - name: Configure & Build
         run: |
-          apt update && apt install -y pip
+          apt update && apt install -y pip && apt install jq
           cmake -B ${GITHUB_WORKSPACE}/build -DCMAKE_BUILD_TYPE=${{matrix.build-type}} -GNinja \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
@@ -40,6 +40,7 @@ jobs:
           ls -l ..
 
       - name: Run PyTests
+        id: pytest
         timeout-minutes: 10
         run: |
           ls -l ${GITHUB_WORKSPACE}/
@@ -48,21 +49,29 @@ jobs:
           pip install -r dragonfly/requirements.txt
           export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/build/dragonfly" # used by PyTests
 
-          pytest -sxvr dragonfly --ignore=dragonfly/replication_test.py
+          pytest --json-report --json-report-file=report.json -svr dragonfly --ignore=dragonfly/replication_test.py
+          failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' report.json)
+          echo "::set-output name=failed_tests::$failed_tests"
       - name: Run PyTests replication test
+        id: replication_pytest
         if: ${{ matrix.runner  == 'ubuntu-latest' }}
         timeout-minutes: 15
         run: |
           cd ${GITHUB_WORKSPACE}/tests
           export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/build/dragonfly" # used by PyTests
-          pytest -xvs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=true
-          pytest -xvs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=false
+          pytest --json-report --json-report-file=rep1_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=true
+          pytest --json-report --json-report-file=rep2_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=false
+          failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' rep1_report.json rep2_report.json)
+          echo "::set-output name=failed_tests::$failed_tests"
 
-      - name: Send notification on failure
+      - name: Send pytest summary to Google Chat
+        uses: google-github-actions/chat@v1
         if: failure() || cancelled()
-        run: |
-          curl -s \
-            -X POST \
-            -H 'Content-Type: application/json' \
-            '${{ secrets.GSPACES_BOT_DF_BUILD }}' \
-            -d '{"text": "Unforunately the tests of dragonfly build are not passed :( \n The commit is ${{github.sha}}	"}'
+        with:
+          webhook-url: ${{ secrets.GSPACES_BOT_DF_BUILD }}
+          message: |
+            Regression tests failed.
+            The commit is ${{ github.sha }}
+            Pytest Summary:
+            ${{ steps.pytest.outputs.failed_tests }}
+            ${{ steps.replication_pytest.outputs.failed_tests }}

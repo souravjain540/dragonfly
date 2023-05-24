@@ -156,7 +156,7 @@ async def test_disconnect_replica(df_local_factory: DflyInstanceFactory, df_seed
             )
         )
     ]
-
+    assert 1 == 2
     # Start master
     master.start()
     c_master = aioredis.Redis(port=master.port, single_connection_client=True)

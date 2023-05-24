@@ -6,6 +6,7 @@ import async_timeout
 
 from . import DflyInstance
 
+
 async def run_monitor_eval(monitor, expected):
     async with monitor as mon:
         count = 0
@@ -77,6 +78,7 @@ async def test_monitor_command(async_pool):
         for i in range(max):
             yield f"key{i}", f"value={i}"
 
+    assert 1 == 2
     messages = {a: b for a, b in generate(5)}
     assert await run_monitor(messages, async_pool)
 
@@ -336,6 +338,7 @@ async def test_subscribe_pipelined(async_client: aioredis.Redis):
         'subscribe channel')
     await pipe.echo('bye bye').execute()
 
+
 async def test_subscribe_in_pipeline(async_client: aioredis.Redis):
     pipe = async_client.pipeline(transaction=False)
     pipe.echo("one")
@@ -345,4 +348,5 @@ async def test_subscribe_in_pipeline(async_client: aioredis.Redis):
     pipe.echo("three")
     res = await pipe.execute()
 
-    assert res == ['one', ['subscribe', 'ch1', 1], 'two', ['subscribe', 'ch2', 2], 'three']
+    assert res == ['one', ['subscribe', 'ch1', 1],
+                   'two', ['subscribe', 'ch2', 2], 'three']
