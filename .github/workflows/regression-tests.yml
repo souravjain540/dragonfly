@@ -51,7 +51,7 @@ jobs:
 
           pytest --json-report --json-report-file=report.json -svr dragonfly --ignore=dragonfly/replication_test.py
           failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' report.json)
-          echo "::set-output name=failed_tests::$failed_tests"
+          echo "failed_tests=$failed_tests\n" >> $GITHUB_OUTPUT
       - name: Run PyTests replication test
         id: replication_pytest
         if: ${{ matrix.runner  == 'ubuntu-latest' }}
@@ -62,7 +62,7 @@ jobs:
           pytest --json-report --json-report-file=rep1_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=true
           pytest --json-report --json-report-file=rep2_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=false
           failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' rep1_report.json rep2_report.json)
-          echo "::set-output name=failed_tests::$failed_tests"
+          echo "failed_tests=$failed_tests\n" >> $GITHUB_OUTPUT
 
       - name: Send pytest summary to Google Chat
         if: failure() || cancelled()
@@ -71,4 +71,4 @@ jobs:
             -X POST \
             -H 'Content-Type: application/json' \
             '${{ secrets.GSPACES_BOT_DF_BUILD }}' \
-            -d '{"text": "Regression tests failed. The commit is ${{github.sha}}. Pytest failed: ${{ steps.pytest.outputs.failed_tests }} ${{ steps.replication_pytest.outputs.failed_tests }}"}'
+            -d '{"text": "Regression tests failed. The commit is ${{github.sha}}. ${{steps.pytest.outputs.failed_tests}} ${{steps.replication_pytest.outputs.failed_tests}}'
