@@ -65,13 +65,10 @@ jobs:
           echo "::set-output name=failed_tests::$failed_tests"
 
       - name: Send pytest summary to Google Chat
-        uses: google-github-actions/chat@v1
         if: failure() || cancelled()
-        with:
-          webhook-url: ${{ secrets.GSPACES_BOT_DF_BUILD }}
-          message: |
-            Regression tests failed.
-            The commit is ${{ github.sha }}
-            Pytest Summary:
-            ${{ steps.pytest.outputs.failed_tests }}
-            ${{ steps.replication_pytest.outputs.failed_tests }}
+        run: |
+          curl -s \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            '${{ secrets.GSPACES_BOT_DF_BUILD }}' \
+            -d '{"text": "Regression tests failed. The commit is ${{github.sha}}. Pytest failed: ${{ steps.pytest.outputs.failed_tests }} ${{ steps.replication_pytest.outputs.failed_tests }}"}'
