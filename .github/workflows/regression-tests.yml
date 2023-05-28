@@ -67,8 +67,10 @@ jobs:
       - name: Send pytest summary to Google Chat
         if: failure() || cancelled()
         run: |
+          echo ${{steps.pytest.outputs.failed_tests}}
+          echo ${{steps.replication_pytest.outputs.failed_tests}}
           curl -s \
             -X POST \
             -H 'Content-Type: application/json' \
             '${{ secrets.GSPACES_BOT_DF_BUILD }}' \
-            -d '{"text": "Regression tests failed.\n The commit is ${{github.sha}}.\n ${{steps.pytest.outputs.failed_tests}} ${{steps.replication_pytest.outputs.failed_tests}} ""}'
+            -d '{"text": "Regression tests failed.\n The commit is ${{github.sha}}.\n ${{steps.pytest.outputs.failed_tests}} ${{steps.replication_pytest.outputs.failed_tests}} "}'
