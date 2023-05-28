@@ -48,10 +48,7 @@ jobs:
           echo "Current commit is ${{github.sha}}"
           pip install -r dragonfly/requirements.txt
           export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/build/dragonfly" # used by PyTests
-
-          pytest --json-report --json-report-file=report.json -svr dragonfly --ignore=dragonfly/replication_test.py
-          failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' report.json)
-          echo "failed_tests=$failed_tests\n" >> $GITHUB_OUTPUT
+          pytest --json-report --json-report-file=pytest_report.json -svr dragonfly --ignore=dragonfly/replication_test.py
       - name: Run PyTests replication test
         id: replication_pytest
         if: ${{ matrix.runner  == 'ubuntu-latest' }}
@@ -61,16 +58,16 @@ jobs:
           export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/build/dragonfly" # used by PyTests
           pytest --json-report --json-report-file=rep1_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=true
           pytest --json-report --json-report-file=rep2_report.json -vs dragonfly/replication_test.py --df alsologtostderr --df enable_multi_shard_sync=false
-          failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' rep1_report.json rep2_report.json)
-          echo "failed_tests=$failed_tests\n" >> $GITHUB_OUTPUT
 
-      - name: Send pytest summary to Google Chat
+      - name: Send summary to Google Chat
         if: failure() || cancelled()
         run: |
-          echo ${{steps.pytest.outputs.failed_tests}}
-          echo ${{steps.replication_pytest.outputs.failed_tests}}
+          failed_tests=""
+          if [ -f pytest_report.json ]; then
+            failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' pytest_report.json)
+          fi
           curl -s \
             -X POST \
             -H 'Content-Type: application/json' \
             '${{ secrets.GSPACES_BOT_DF_BUILD }}' \
-            -d '{"text": "Regression tests failed.\n The commit is ${{github.sha}}.\n ${{steps.pytest.outputs.failed_tests}} ${{steps.replication_pytest.outputs.failed_tests}} "}'
+            -d '{"text": "Regression tests failed.\n The commit is ${{github.sha}}.\n $failed_tests "}'
