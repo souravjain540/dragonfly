@@ -62,6 +62,7 @@ jobs:
       - name: Send summary to Google Chat
         if: failure() || cancelled()
         run: |
+          cd ${GITHUB_WORKSPACE}/tests
           failed_tests=""
           if [ -f pytest_report.json ]; then
             failed_tests=$(jq -r '.tests[] | select(.outcome == "failed") | .nodeid' pytest_report.json)
