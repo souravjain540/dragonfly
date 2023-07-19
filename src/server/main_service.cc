@@ -64,6 +64,11 @@ ABSL_FLAG(bool, admin_nopass, false,
           "If set, would enable open admin access to console on the assigned port, without auth "
           "token needed.");
 
+ABSL_FLAG(dfly::MaxMemoryFlag, maxmemory, dfly::MaxMemoryFlag(0),
+          "Limit on maximum-memory that is used by the database. "
+          "0 - means the program will automatically determine its maximum memory usage. "
+          "default: 0");
+
 namespace dfly {
 
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
@@ -1932,6 +1937,11 @@ void Service::RegisterCommands() {
 
   server_family_.Register(&registry_);
   cluster_family_.Register(&registry_);
+
+  config_registry.Register("maxmemory", [](string_view value) {
+    // ...
+    return true;
+  });
 
   if (VLOG_IS_ON(1)) {
     LOG(INFO) << "Multi-key commands are: ";

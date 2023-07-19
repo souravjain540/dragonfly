@@ -46,31 +46,7 @@
 
 using namespace std;
 
-struct MaxMemoryFlag {
-  MaxMemoryFlag() = default;
-  MaxMemoryFlag(const MaxMemoryFlag&) = default;
-  MaxMemoryFlag& operator=(const MaxMemoryFlag&) = default;
-  MaxMemoryFlag(uint64_t v) : value(v) {
-  }  // NOLINT
-
-  uint64_t value;
-};
-
-bool AbslParseFlag(absl::string_view in, MaxMemoryFlag* flag, std::string* err) {
-  int64_t val;
-  if (dfly::ParseHumanReadableBytes(in, &val) && val >= 0) {
-    flag->value = val;
-    return true;
-  }
-
-  *err = "Use human-readable format, eg.: 1G, 1GB, 10GB";
-  return false;
-}
-
-std::string AbslUnparseFlag(const MaxMemoryFlag& flag) {
-  return strings::HumanReadableNumBytes(flag.value);
-}
-
+ABSL_DECLARE_FLAG(dfly::MaxMemoryFlag, maxmemory);
 ABSL_DECLARE_FLAG(uint32_t, port);
 ABSL_DECLARE_FLAG(uint32_t, memcached_port);
 ABSL_DECLARE_FLAG(uint16_t, admin_port);
@@ -87,10 +63,6 @@ ABSL_FLAG(string, unixsocketperm, "", "Set permissions for unixsocket, in octal 
 ABSL_FLAG(bool, force_epoll, false,
           "If true - uses linux epoll engine underneath."
           "Can fit for kernels older than 5.10.");
-ABSL_FLAG(MaxMemoryFlag, maxmemory, MaxMemoryFlag(0),
-          "Limit on maximum-memory that is used by the database. "
-          "0 - means the program will automatically determine its maximum memory usage. "
-          "default: 0");
 
 ABSL_FLAG(bool, version_check, true,
           "If true, Will monitor for new releases on Dragonfly servers once a day.");
@@ -302,7 +274,7 @@ string NormalizePaths(std::string_view path) {
 }
 
 bool RunEngine(ProactorPool* pool, AcceptServer* acceptor) {
-  auto maxmemory = GetFlag(FLAGS_maxmemory).value;
+  uint64_t maxmemory = GetFlag(FLAGS_maxmemory).value;
   if (maxmemory > 0 && maxmemory < pool->size() * 256_MB) {
     LOG(ERROR) << "There are " << pool->size() << " threads, so "
                << HumanReadableNumBytes(pool->size() * 256_MB) << " are required. Exiting...";

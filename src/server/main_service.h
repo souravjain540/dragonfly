@@ -9,6 +9,7 @@
 #include "facade/service_interface.h"
 #include "server/cluster/cluster_family.h"
 #include "server/command_registry.h"
+#include "server/config_registry.h"
 #include "server/engine_shard_set.h"
 #include "server/server_family.h"
 
@@ -21,6 +22,7 @@ namespace dfly {
 class Interpreter;
 class ObjectExplorer;  // for Interpreter
 using facade::MemcacheParser;
+
 class Service : public facade::ServiceInterface {
  public:
   using error_code = std::error_code;

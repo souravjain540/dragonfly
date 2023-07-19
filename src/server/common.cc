@@ -23,6 +23,7 @@ extern "C" {
 #include "server/journal/journal.h"
 #include "server/server_state.h"
 #include "server/transaction.h"
+#include "strings/human_readable.h"
 
 namespace dfly {
 
@@ -319,6 +320,21 @@ GenericError Context::ReportErrorInternal(GenericError&& err) {
 
   Cancellation::Cancel();
   return err_;
+}
+
+bool AbslParseFlag(std::string_view in, dfly::MaxMemoryFlag* flag, std::string* err) {
+  int64_t val;
+  if (dfly::ParseHumanReadableBytes(in, &val) && val >= 0) {
+    flag->value = val;
+    return true;
+  }
+
+  *err = "Use human-readable format, eg.: 1G, 1GB, 10GB";
+  return false;
+}
+
+std::string AbslUnparseFlag(const dfly::MaxMemoryFlag& flag) {
+  return strings::HumanReadableNumBytes(flag.value);
 }
 
 }  // namespace dfly
