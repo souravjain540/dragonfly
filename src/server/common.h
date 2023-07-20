@@ -139,16 +139,6 @@ enum class GlobalState : uint8_t {
 
 enum class TimeUnit : uint8_t { SEC, MSEC };
 
-struct MaxMemoryFlag {
-  MaxMemoryFlag() = default;
-  MaxMemoryFlag(const MaxMemoryFlag&) = default;
-  MaxMemoryFlag& operator=(const MaxMemoryFlag&) = default;
-  MaxMemoryFlag(uint64_t v) : value(v) {
-  }  // NOLINT
-
-  uint64_t value;
-};
-
 inline void ToUpper(const MutableSlice* val) {
   for (auto& c : *val) {
     c = absl::ascii_toupper(c);
@@ -166,8 +156,6 @@ bool ParseDouble(std::string_view src, double* value);
 const char* ObjTypeName(int type);
 
 const char* RdbTypeName(unsigned type);
-bool AbslParseFlag(std::string_view in, MaxMemoryFlag* flag, std::string* err);
-std::string AbslUnparseFlag(const dfly::MaxMemoryFlag& flag);
 
 // Cached values, updated frequently to represent the correct state of the system.
 extern std::atomic_uint64_t used_mem_peak;

@@ -46,7 +46,6 @@
 
 using namespace std;
 
-ABSL_DECLARE_FLAG(dfly::MaxMemoryFlag, maxmemory);
 ABSL_DECLARE_FLAG(uint32_t, port);
 ABSL_DECLARE_FLAG(uint32_t, memcached_port);
 ABSL_DECLARE_FLAG(uint16_t, admin_port);
@@ -274,7 +273,7 @@ string NormalizePaths(std::string_view path) {
 }
 
 bool RunEngine(ProactorPool* pool, AcceptServer* acceptor) {
-  uint64_t maxmemory = GetFlag(FLAGS_maxmemory).value;
+  uint64_t maxmemory = GetMaxMemory();
   if (maxmemory > 0 && maxmemory < pool->size() * 256_MB) {
     LOG(ERROR) << "There are " << pool->size() << " threads, so "
                << HumanReadableNumBytes(pool->size() * 256_MB) << " are required. Exiting...";
@@ -663,16 +662,16 @@ Usage: dragonfly [FLAGS]
   if (memory.swap_total != 0)
     LOG(WARNING) << "SWAP is enabled. Consider disabling it when running Dragonfly.";
 
-  if (GetFlag(FLAGS_maxmemory).value == 0) {
+  if (GetMaxMemory() == 0) {
     LOG(INFO) << "maxmemory has not been specified. Deciding myself....";
 
     size_t available = memory.mem_avail;
     size_t maxmemory = size_t(0.8 * available);
     LOG(INFO) << "Found " << HumanReadableNumBytes(available)
               << " available memory. Setting maxmemory to " << HumanReadableNumBytes(maxmemory);
-    absl::SetFlag(&FLAGS_maxmemory, MaxMemoryFlag(maxmemory));
+    SetMaxMemory(maxmemory);
   } else {
-    size_t limit = GetFlag(FLAGS_maxmemory).value;
+    size_t limit = GetMaxMemory();
     string hr_limit = HumanReadableNumBytes(limit);
     if (limit > memory.mem_avail)
       LOG(WARNING) << "Got memory limit " << hr_limit << ", however only "
@@ -680,7 +679,7 @@ Usage: dragonfly [FLAGS]
     LOG(INFO) << "Max memory limit is: " << hr_limit;
   }
 
-  dfly::max_memory_limit = GetFlag(FLAGS_maxmemory).value;
+  dfly::max_memory_limit = GetMaxMemory();
 
   mi_option_enable(mi_option_show_errors);
   mi_option_set(mi_option_max_warnings, 0);

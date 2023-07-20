@@ -41,6 +41,7 @@ extern "C" {
 #include "server/transaction.h"
 #include "server/version.h"
 #include "server/zset_family.h"
+#include "strings/human_readable.h"
 #include "util/html/sorted_table.h"
 #include "util/varz.h"
 
@@ -64,12 +65,45 @@ ABSL_FLAG(bool, admin_nopass, false,
           "If set, would enable open admin access to console on the assigned port, without auth "
           "token needed.");
 
-ABSL_FLAG(dfly::MaxMemoryFlag, maxmemory, dfly::MaxMemoryFlag(0),
+struct MaxMemoryFlag {
+  MaxMemoryFlag() = default;
+  MaxMemoryFlag(const MaxMemoryFlag&) = default;
+  MaxMemoryFlag& operator=(const MaxMemoryFlag&) = default;
+  MaxMemoryFlag(uint64_t v) : value(v) {
+  }  // NOLINT
+
+  uint64_t value;
+};
+
+bool AbslParseFlag(std::string_view in, MaxMemoryFlag* flag, std::string* err) {
+  int64_t val;
+  if (dfly::ParseHumanReadableBytes(in, &val) && val >= 0) {
+    flag->value = val;
+    return true;
+  }
+
+  *err = "Use human-readable format, eg.: 1G, 1GB, 10GB";
+  return false;
+}
+
+std::string AbslUnparseFlag(const MaxMemoryFlag& flag) {
+  return strings::HumanReadableNumBytes(flag.value);
+}
+
+ABSL_FLAG(MaxMemoryFlag, maxmemory, MaxMemoryFlag(0),
           "Limit on maximum-memory that is used by the database. "
           "0 - means the program will automatically determine its maximum memory usage. "
           "default: 0");
 
 namespace dfly {
+
+uint64_t GetMaxMemory() {
+  return absl::GetFlag(FLAGS_maxmemory).value;
+}
+
+void SetMaxMemory(uint64_t max_memory) {
+  absl::SetFlag(&FLAGS_maxmemory, {max_memory});
+}
 
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>

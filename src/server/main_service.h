@@ -23,6 +23,9 @@ class Interpreter;
 class ObjectExplorer;  // for Interpreter
 using facade::MemcacheParser;
 
+uint64_t GetMaxMemory();
+void SetMaxMemory(uint64_t max_memory);
+
 class Service : public facade::ServiceInterface {
  public:
   using error_code = std::error_code;
