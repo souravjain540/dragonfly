@@ -1415,7 +1415,7 @@ void ServerFamily::Info(CmdArgList args, ConnectionContext* cntx) {
   }
 
   if (should_enter("TIERED", true)) {
-    ADD_HEADER("# TIERED");
+    ADD_HEADER("# Tiered");
     append("tiered_entries", total.tiered_entries);
     append("tiered_bytes", total.tiered_size);
     append("tiered_reads", m.tiered_stats.tiered_reads);
@@ -1427,7 +1427,7 @@ void ServerFamily::Info(CmdArgList args, ConnectionContext* cntx) {
   }
 
   if (should_enter("PERSISTENCE", true)) {
-    ADD_HEADER("# PERSISTENCE");
+    ADD_HEADER("# Persistence");
     decltype(last_save_info_) save_info;
     {
       lock_guard lk(save_mu_);
