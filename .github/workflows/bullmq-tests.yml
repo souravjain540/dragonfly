@@ -38,7 +38,7 @@ jobs:
           git clone https://github.com/dragonflydb/bullmq.git
           cd bullmq
           pwd
-          yarn install --ignore-engines --frozen-lockfile --non-interactive
+          yarn install --ignore-engines --non-interactive
           yarn build
       - name: Test BullMQ
         run: |
