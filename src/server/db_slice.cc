@@ -804,11 +804,12 @@ bool DbSlice::Acquire(IntentLock::Mode mode, const KeyLockArgs& lock_args) {
         bool res = lt[s].Acquire(mode);
         lock_acquired &= res;
       }
+      CHECK(uniq_keys_.size() == 1);
     }
   }
 
-  DVLOG(2) << "Acquire " << IntentLock::ModeName(mode) << " for " << lock_args.args[0]
-           << " has_acquired: " << lock_acquired;
+  LOG(INFO) << "Acquire " << IntentLock::ModeName(mode) << " for "
+            << KeyLockArgs::GetLockKey(lock_args.args[0]) << " has_acquired: " << lock_acquired;
 
   return lock_acquired;
 }
@@ -837,7 +838,8 @@ void DbSlice::Release(IntentLock::Mode mode, const KeyLockArgs& lock_args) {
     return;
   }
 
-  DVLOG(2) << "Release " << IntentLock::ModeName(mode) << " for " << lock_args.args[0];
+  LOG(INFO) << "Release " << IntentLock::ModeName(mode) << " for "
+            << KeyLockArgs::GetLockKey(lock_args.args[0]);
   if (lock_args.args.size() == 1) {
     string_view key = KeyLockArgs::GetLockKey(lock_args.args.front());
     ReleaseNormalized(mode, lock_args.db_index, key, 1);

@@ -31,7 +31,7 @@ jobs:
           cd $GITHUB_WORKSPACE/build
           cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja
           ninja dragonfly
-          ./dragonfly --alsologtostderr --dbfilename= --cluster_mode=emulated --lock_on_hashtags &
+          ./dragonfly --alsologtostderr --dbfilename= --cluster_mode=emulated --lock_on_hashtags --vmodule=main_service=2&
 
       - name: Clone and build BullMQ
         run: |
@@ -40,7 +40,11 @@ jobs:
           pwd
           yarn install --ignore-engines --non-interactive
           yarn build
-      - name: Test BullMQ
+      - name: Test BullMQ1
+        run: |
+          cd $GITHUB_WORKSPACE/bullmq
+          yarn test -g "flows.should allow parent opts on the root job"
+      - name: Test BullMQ2
         run: |
           cd $GITHUB_WORKSPACE/bullmq
           yarn test -i -g "should process delayed jobs with several workers respecting delay"
