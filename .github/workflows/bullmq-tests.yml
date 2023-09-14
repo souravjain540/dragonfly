@@ -40,11 +40,8 @@ jobs:
           pwd
           yarn install --ignore-engines --non-interactive
           yarn build
-      - name: Test BullMQ1
-        run: |
-          cd $GITHUB_WORKSPACE/bullmq
-          yarn test -g "flows.should allow parent opts on the root job"
-      - name: Test BullMQ2
+
+      - name: Test BullMQ
         run: |
           cd $GITHUB_WORKSPACE/bullmq
           yarn test -i -g "should process delayed jobs with several workers respecting delay"
