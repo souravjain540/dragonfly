@@ -804,7 +804,6 @@ bool DbSlice::Acquire(IntentLock::Mode mode, const KeyLockArgs& lock_args) {
         bool res = lt[s].Acquire(mode);
         lock_acquired &= res;
       }
-      CHECK(uniq_keys_.size() == 1);
     }
   }
 
