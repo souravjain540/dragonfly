@@ -31,7 +31,7 @@ jobs:
           cd $GITHUB_WORKSPACE/build
           cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja
           ninja dragonfly
-          ./dragonfly --alsologtostderr --dbfilename= --cluster_mode=emulated --lock_on_hashtags --vmodule=main_service=2 &
+          ./dragonfly --alsologtostderr --dbfilename= --cluster_mode=emulated --lock_on_hashtags &
 
       - name: Clone and build BullMQ
         run: |

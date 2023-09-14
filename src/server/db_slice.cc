@@ -807,8 +807,8 @@ bool DbSlice::Acquire(IntentLock::Mode mode, const KeyLockArgs& lock_args) {
     }
   }
 
-  LOG(INFO) << "Acquire " << IntentLock::ModeName(mode) << " for "
-            << KeyLockArgs::GetLockKey(lock_args.args[0]) << " has_acquired: " << lock_acquired;
+  DVLOG(2) << "Acquire " << IntentLock::ModeName(mode) << " for " << lock_args.args[0]
+           << " has_acquired: " << lock_acquired;
 
   return lock_acquired;
 }
@@ -837,8 +837,7 @@ void DbSlice::Release(IntentLock::Mode mode, const KeyLockArgs& lock_args) {
     return;
   }
 
-  LOG(INFO) << "Release " << IntentLock::ModeName(mode) << " for "
-            << KeyLockArgs::GetLockKey(lock_args.args[0]);
+  DVLOG(2) << "Release " << IntentLock::ModeName(mode) << " for " << lock_args.args[0];
   if (lock_args.args.size() == 1) {
     string_view key = KeyLockArgs::GetLockKey(lock_args.args.front());
     ReleaseNormalized(mode, lock_args.db_index, key, 1);
