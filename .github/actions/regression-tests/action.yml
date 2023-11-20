@@ -32,6 +32,7 @@ runs:
       run: |
         echo "Running PyTests replication test"
         cd ${GITHUB_WORKSPACE}/tests
+        pip3 install -r dragonfly/requirements.txt
         # used by PyTests
         export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/${{inputs.build-folder-name}}/${{inputs.dfly-executable}}"
 
