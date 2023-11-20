@@ -249,13 +249,9 @@ struct Cancellation {
   Cancellation() : flag_{false} {
   }
 
-  void Cancel() {
-    flag_.store(true, std::memory_order_relaxed);
-  }
+  void Cancel();
 
-  bool IsCancelled() const {
-    return flag_.load(std::memory_order_relaxed);
-  }
+  bool IsCancelled() const;
 
  protected:
   std::atomic_bool flag_;

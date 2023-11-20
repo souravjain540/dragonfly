@@ -373,4 +373,14 @@ GenericError Context::ReportErrorInternal(GenericError&& err) {
   return err_;
 }
 
+void Cancellation::Cancel() {
+  VLOG(1) << "Cancel" << this;
+  flag_.store(true, std::memory_order_relaxed);
+}
+
+bool Cancellation::IsCancelled() const {
+  VLOG(1) << "IsCancelled" << this;
+  return flag_.load(std::memory_order_relaxed);
+}
+
 }  // namespace dfly
