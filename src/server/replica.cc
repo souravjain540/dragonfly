@@ -77,7 +77,7 @@ Replica::~Replica() {
 static const char kConnErr[] = "could not connect to master: ";
 
 error_code Replica::Start(ConnectionContext* cntx) {
-  VLOG(1) << "Starting replication";
+  VLOG(1) << "Starting replication " << this;
   ProactorBase* mythread = ProactorBase::me();
   CHECK(mythread);
 
@@ -131,7 +131,7 @@ void Replica::EnableReplication(ConnectionContext* cntx) {
 }
 
 void Replica::Stop() {
-  VLOG(1) << "Stopping replication";
+  VLOG(1) << "Stopping replication " << this;
   // Stops the loop in MainReplicationFb.
   state_mask_.store(0);  // Specifically ~R_ENABLED.
   cntx_.Cancel();        // Context is fully resposible for cleanup.
@@ -140,7 +140,9 @@ void Replica::Stop() {
 
   // Make sure the replica fully stopped and did all cleanup,
   // so we can freely release resources (connections).
+  VLOG(1) << "Join sync_fb_";
   sync_fb_.JoinIfNeeded();
+  VLOG(1) << "Join acks_fb_";
   acks_fb_.JoinIfNeeded();
 }
 
