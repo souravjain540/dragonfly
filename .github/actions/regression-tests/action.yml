@@ -30,10 +30,14 @@ runs:
       if: ${{ inputs.run-only-on-ubuntu-latest == 'true' || (inputs.run-only-on-ubuntu-latest == 'false' && matrix.runner == 'ubuntu-latest') }}
       shell: bash
       run: |
+
         echo "Running PyTests replication test"
+        ls -l ${GITHUB_WORKSPACE}/
         cd ${GITHUB_WORKSPACE}/tests
+        pip3 install -r dragonfly/requirements.txt
         # used by PyTests
         export DRAGONFLY_PATH="${GITHUB_WORKSPACE}/${{inputs.build-folder-name}}/${{inputs.dfly-executable}}"
+        export UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 # to crash on errors
 
         run_pytest_with_args() {
           timeout 20m pytest -m "${{inputs.filter}}" --color=yes --json-report \
