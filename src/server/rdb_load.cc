@@ -1994,9 +1994,9 @@ error_code RdbLoader::Load(io::Source* src) {
 
       if (full_sync_cut_cb) {
         FlushAllShards();  // Flush as the handler awakes post load handlers
-        VLOG(1) << "before full_sync_cut_cb";
+        // VLOG(1) << "before full_sync_cut_cb";
         full_sync_cut_cb();
-        VLOG(1) << "after full_sync_cut_cb";
+        // VLOG(1) << "after full_sync_cut_cb";
       }
       continue;
     }
