@@ -213,7 +213,7 @@ class DashTable : public detail::DashTableBase {
   }
 
   size_t bucket_count() const {
-    return unique_segments_ * SegmentType::kNumBuckets;
+    return unique_segments_ * SegmentType::kRegularBucketCnt;
   }
 
   // Overall capacity of the table (including stash buckets).
